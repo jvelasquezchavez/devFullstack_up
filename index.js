@@ -1,84 +1,171 @@
-const express = require("express")
+const express = require("express");
 const app = express();
-const http = require ("http").createServer(app);
-const dotenv = require('dotenv').config(); 
-const PORT = process.env.PORT;
+const mongoose = require("mongoose");
+const http = require("http").createServer(app);
+const cors = require("cors");
+require('dotenv').config();
+const PORT = process.env.PORT || 5000;
+const uri = process.env.MONGO_URI;
 
-// Acceso a la DB
+/******/
+const UsrController = require('./controllers/user');
+const AuthController = require('./controllers/auth.js');
+const Middleware = require('./middleware/auth-middleware');
+//const MailController = require('./controllers/mail');
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = process.env.DB_URL;
- const client = new MongoClient(uri, {
-//     serverApi: {
-//       version: ServerApiVersion.v1,
-//       strict: true,
-//       deprecationErrors: true,
-//     }
-//   });
 
+mongoose
+ // .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect('mongodb://localhost:27017')
+  .then(() => {
+    console.log("connected");
+  })
+  .catch((err) => console.log(err));
+
+
+app.use(cors());
 app.use(express.json());
 
-http.listen(PORT,() =>{
-    console.log(`listening to ${PORT}`);
-})
 
-app.get("/personajes", async (req,res) =>{
+app.get("/", (req, res) => {
+  //res.send("Hola estoy funcionando.");
+  res.status(200).json("Hola estoy funcionando.");
+});
 
-    //let result = {'personaje':1,'personaje':2,'personaje':3} 
+// GET - POST - DELETE - PUT - PATCH 
+
+// app.post("/",(req,res) => {
+//     res.send("Llamada post");
+// });
+
+// // Get de todos los usuarios
+// app.get("/users",Middleware.verify,async (req,res) =>{
+
+//   let limit = req.query.limit;
+//   let offset = req.query.offset;
+
+//   try{
+//       const results = await UsrController.getAllUsers(limit,offset);
+//       res.status(200).json(results);
+
+//   }catch(error){
+//       res.status(500).send("Error. Intente más tarde.")
+//   }
+
+// });
+
+// // Get Info de un usuario
+
+// app.get("/users/:id",async (req,res) =>{
+
+//     let userId =  req.params.id;
+
+//     try{
+
+//       user = await UsrController.getUser(userId);
+
+//       res.status(200).json(user);
+
+//     }catch(error){
+//       res.status(500).send("Error");
+//     }
+
+// });
+
+// // Creo un nuevo usuario
+
+// app.post("/users",async (req,res) =>{
     
-    let { limit = 5, offset = 0 } = req.params;
-    console.log(limit);
-    try{
-        let result = await collection.find({}).skip(parseInt(offset)).limit(parseInt(limit)).toArray()
-        console.log(result);
-        res.json({burgers: result});
-    }catch(error){
-        console.log("error");
-        let response = {'status':500,'message':"Error de conexión."}
-        res.json({response: response});
-    }    
-})
+//     let name = req.body.name;
+//     let lastname = req.body.lastname;
+//     let email = req.body.email;
+//     let isActive = req.body.isActive;
+//     let password = req.body.password;
+//     try{
+//       const result = await UsrController.addUser(name,lastname,email,isActive,password);
+//       if(result){
+//         res.status(201).send("Usuario creado correctamente"); // 201
+//       }else{
+//         res.status(409).send("El usuario ya existe"); // 409
+//       }  
+//     }catch(error){
+//       res.status(500).send("Error al crear el usuario."); //500
+//     }  
+    
+// });
 
-app.post("/login", (req, res) => {
-    const { nombre, pin } = req.body;
-  
-    // Aquí debes verificar el nombre y el PIN en tu base de datos o sistema de autenticación.
-    // Si la autenticación es exitosa, puedes guardar el nombre del niño en la sesión o en una cookie.
-    // Luego redireccionar al usuario a la página de selección de personajes o a donde corresponda.
-  
-    // Si la autenticación falla, puedes devolver un mensaje de error.
-  });
+// // Modifico un usuario
+// app.put("/users/:id",async (req,res) =>{
 
-  app.get("/personajes/disponibles", (req, res) => {
-    // Aquí debes obtener la lista de personajes disponibles desde tu base de datos.
-    // Luego, devolverla como respuesta en formato JSON.
-  });
-  
-  app.post("/atuendo", (req, res) => {
-    const { parteSuperior, parteInferior, zapatos } = req.body;
-  
-    // Aquí debes guardar el atuendo seleccionado por el niño en tu base de datos o sistema de almacenamiento.
-  
-    // Luego, puedes devolver un mensaje de éxito o error como respuesta.
-  });
+//     const user = { _id: req.params.id, ...req.body };
+//     //             {_id: req.params.id, name: req.body.name, lastname, email }
+//     try{
+      
+//       const result = await UsrController.editUser(user);
+//       if(result){
+//         res.status(200).json(result);
+//       }else{
+//         res.status(404).send("El usuario no existe.");
+//       }  
+//     }catch(error){  
+//        res.status(500).send("Error");
+//     } 
 
-  app.post("/guardarResultado", (req, res) => {
-    const { resultado } = req.body;
-  
-    // Aquí debes guardar el resultado en tu base de datos o sistema de almacenamiento.
-  
-    // Luego, puedes devolver un mensaje de éxito o error como respuesta.
-  });
+// });
 
+// // Elimino un usuario
+// app.delete("/users/:id", async(req,res) =>{
 
-  app.get("/personajes/generados", (req, res) => {
-    // Aquí debes obtener los personajes generados previamente por el niño desde tu base de datos.
-    // Luego, devolverlos como respuesta en formato JSON.
-  });
+//     try{
 
-  app.get("/personajes/publicos", (req, res) => {
-  const limit = 5;
+//       const result = await UsrController.deleteUser(req.params.id);
+//       if(result){
+//         res.status(200).send("Usuario borrado.")
+//       }else{
+//         res.status(404).send("No se ha podido eliminar el usuario.")
+//       }  
 
-  // Aquí debes obtener los últimos 5 personajes públicos desde tu base de datos.
-  // Luego, devolverlos como respuesta en formato JSON.
+//     }catch(error){
+//       res.status(500).send("Error")
+//     }
+// });
+
+// app.put("/users/:id/roles",async (req,res) =>{
+    
+//     const roles = req.body.roles;
+//     //const user = { _id: req.params.id, ...req.body };
+//     try{
+      
+//       const result = await UsrController.editRoles(roles,req.params.id);
+//       if(result){
+//         res.status(200).json(result);
+//       }else{
+//         res.status(404).send("El usuario no existe.");
+//       }  
+//     }catch(error){  
+//        res.status(500).send("Error");
+//     } 
+// })
+
+// app.post("/auth/login", async (req,res) => {
+
+//     const email = req.body.email;
+//     const password = req.body.password;
+//     try{
+//       const result = await AuthController.login(email,password);
+//       if(result){
+//         res.status(200).json(result);
+//       }else{
+//         res.status(401).send("No puede estar aqui")
+//       }
+//     }catch(error){
+//         res.status(500).send("Error");
+//     }  
+// })
+
+/* Manda un mail */
+//MailController.sendMail();
+
+http.listen(PORT, () => {
+  console.log(`Listening to ${PORT}`);
 });
