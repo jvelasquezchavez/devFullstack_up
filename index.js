@@ -1,35 +1,33 @@
 const express = require("express");
 const app = express();
-const mongoose = require("mongoose");
 const http = require("http").createServer(app);
+const mongoose = require("mongoose");
 const cors = require("cors");
 require('dotenv').config();
-const PORT = process.env.PORT || 5000;
-const uri = process.env.MONGO_URI;
-
-/******/
-const UsrController = require('./controllers/user');
-const AuthController = require('./controllers/auth.js');
-const Middleware = require('./middleware/auth-middleware');
-//const MailController = require('./controllers/mail');
-
+const PORT = process.env.PORT;
+const URL = process.env.MONGO_URL;
+const users = require("./endpoints/users");
+const characters = require("./endpoints/character");
+const authorization = require("./endpoints/auth");
 
 mongoose
- // .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
-  .connect('mongodb://localhost:27017')
+  .connect(URL)
   .then(() => {
     console.log("connected");
   })
   .catch((err) => console.log(err));
 
-
 app.use(cors());
 app.use(express.json());
 
+app.use("/endp", users, characters, authorization);
 
 app.get("/", (req, res) => {
-  //res.send("Hola estoy funcionando.");
   res.status(200).json("Hola estoy funcionando.");
+});
+
+http.listen(PORT, () => {
+  console.log(`Listening to ${PORT}`);
 });
 
 // GET - POST - DELETE - PUT - PATCH 
@@ -165,7 +163,3 @@ app.get("/", (req, res) => {
 
 /* Manda un mail */
 //MailController.sendMail();
-
-http.listen(PORT, () => {
-  console.log(`Listening to ${PORT}`);
-});
