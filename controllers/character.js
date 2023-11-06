@@ -16,11 +16,11 @@ exports.getCharacters = async (req, res) => {
 
 exports.createCharacter = async (req, res) => {
   try {
-    if (Character.schema.validate(req.body).error)
-      return res.status(400).json({ message: validationResult.error.details[0].message });
+    if (!req.body.name || !req.body.face || !req.body.top || !req.body.bottom || !req.body.shoes)
+       return res.status(400).json({ message: "Faltan parametros para crear el personaje" });
 
     const nuevoPersonaje = new Character({
-      nombre: req.body.nombre,
+      name: req.body.name,
       face: req.body.face,
       top: req.body.top,
       bottom: req.body.bottom,
