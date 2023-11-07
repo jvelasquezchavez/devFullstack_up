@@ -9,7 +9,7 @@ const login = async (req, res) => {
     if (!req.body.email)
         res.status(401).send("Complete el mail");
     else if (!password)
-        res.status(401).send("Complete la contraseña.");        
+        res.status(401).send("Complete la contraseña.");
     else {
         const existingUser = await Usr.findOne({
             email: req.body.email,
@@ -18,9 +18,9 @@ const login = async (req, res) => {
         });
 
         if (existingUser)
-            res.status(200).json(webJwt.sign({ user: existingUser }, secret_key, { expiresIn: "1d" }));
+            res.status(200).json({data: webJwt.sign({ user: existingUser }, secret_key, { expiresIn: "1d" }), hasError: false});
         else
-            res.status(401).send("Usuario no encontrado.");
+            res.status(401).send({data: "Usuario no encontrado.", hasError: true});
     }
 };
 
