@@ -17,8 +17,9 @@ const login = async (req, res) => {
             password: require("crypto").createHash("sha256").update(password).digest("hex"),
         });
 
+        const token = webJwt.sign({ user: existingUser }, secret_key, { expiresIn: "1d" });
         if (existingUser)
-            res.status(200).json({data: webJwt.sign({ user: existingUser }, secret_key, { expiresIn: "1d" }), hasError: false});
+            res.status(200).json({data: token, hasError: false});
         else
             res.status(401).send({data: "Usuario no encontrado.", hasError: true});
     }
